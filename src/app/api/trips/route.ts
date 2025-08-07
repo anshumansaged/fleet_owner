@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Trip, Driver } from '@/models';
+import { Trip, Driver, CashierTransaction, CashBalance } from '@/models';
 
 export async function GET(request: NextRequest) {
   try {
@@ -89,7 +89,9 @@ export async function POST(request: NextRequest) {
       cashToCashier = 0,
       driverTookSalary = false,
       cashGivenToCashier = false,
-      platform = 'multiple'
+      platform = 'multiple',
+      negativeHandlingOption = null,
+      amountFromCashier = 0
     } = body;
     
     // Validate required fields
@@ -169,14 +171,55 @@ export async function POST(request: NextRequest) {
 
     await trip.save();
 
+    // Handle negative cash scenarios
+    if (negativeHandlingOption === 'cashier' && amountFromCashier > 0) {
+      try {
+        // Create a cashier transaction record
+        const cashierTransaction = new CashierTransaction({
+          type: 'withdrawal',
+          amount: amountFromCashier,
+          description: `Cash deficit covered for trip - Driver: ${driver.name}`,
+          cashierName: 'System',
+          ownerAuthenticated: true,
+          transactionDate: new Date(tripDate)
+        });
+        
+        await cashierTransaction.save();
+        
+        // Update cash balance
+        const currentBalance = await CashBalance.findOne();
+        
+        if (currentBalance) {
+          await CashBalance.findByIdAndUpdate(currentBalance._id, {
+            $inc: { currentBalance: -amountFromCashier },
+            $set: { lastUpdated: new Date() }
+          });
+        } else {
+          await CashBalance.create({
+            currentBalance: Math.max(0, -amountFromCashier),
+            lastUpdated: new Date()
+          });
+        }
+      } catch (error) {
+        console.error('Error updating cashier balance:', error);
+      }
+    }
+
     // Update driver totals
-    const salaryToAdd = driverTookSalary ? driverSalary : netEarnings * driver.commissionPercentage / 100;
+    let adjustedDriverSalary = driverSalary;
+    
+    // If negative cash is added to driver salary, adjust the salary calculation
+    if (negativeHandlingOption === 'salary' && cashInDriverHand < 0) {
+      adjustedDriverSalary = driverSalary + Math.abs(cashInDriverHand);
+    }
+    
+    const salaryToAdd = driverTookSalary ? adjustedDriverSalary : netEarnings * driver.commissionPercentage / 100;
     
     await Driver.findByIdAndUpdate(driverId, {
       $inc: {
         totalEarnings: totalEarnings,
         pendingSalary: driverTookSalary ? 0 : salaryToAdd,
-        totalSalaryPaid: driverTookSalary ? driverSalary : 0
+        totalSalaryPaid: driverTookSalary ? adjustedDriverSalary : 0
       }
     });
 

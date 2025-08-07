@@ -82,6 +82,16 @@ export default function AddTrip() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [justMovedToStep3, setJustMovedToStep3] = useState(false);
   const [showCashierSection, setShowCashierSection] = useState(false);
+  
+  // Negative cash handling states
+  const [showNegativeCashModal, setShowNegativeCashModal] = useState(false);
+  const [negativeAmount, setNegativeAmount] = useState(0);
+  const [negativeHandlingOption, setNegativeHandlingOption] = useState<'salary' | 'cashier' | null>(null);
+  const [amountFromCashier, setAmountFromCashier] = useState('');
+  
+  // WhatsApp summary states
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [tripSummary, setTripSummary] = useState<Record<string, unknown> | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     tripDate: '',
@@ -135,6 +145,24 @@ export default function AddTrip() {
       document.removeEventListener('keydown', handleFormEvents);
     };
   }, []);
+
+  // Check for negative cash when moving to step 3 or when values change on step 3
+  useEffect(() => {
+    if (currentStep === 3) {
+      const totalCash = calculateTotalCash();
+      const onlinePayment = parseFloat(formData.onlinePayment || '0');
+      const totalFuelCost = fuelEntries.reduce((sum, entry) => sum + entry.amount, 0);
+      const otherExpenses = parseFloat(formData.otherExpenses || '0');
+      const driverSalary = formData.driverTookSalary ? calculateDriverSalary() : 0;
+      const cashInHand = totalCash - onlinePayment - totalFuelCost - otherExpenses - driverSalary;
+      
+      if (cashInHand < 0 && !negativeHandlingOption && !showNegativeCashModal) {
+        setNegativeAmount(Math.abs(cashInHand));
+        setShowNegativeCashModal(true);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, formData.onlinePayment, formData.otherExpenses, formData.driverTookSalary, fuelEntries, negativeHandlingOption, showNegativeCashModal]);
 
   const fetchDrivers = async () => {
     try {
@@ -249,7 +277,121 @@ export default function AddTrip() {
     const otherExpenses = parseFloat(formData.otherExpenses || '0');
     const driverSalary = formData.driverTookSalary ? calculateDriverSalary() : 0;
     
-    return totalCash - onlinePayment - totalFuelCost - otherExpenses - driverSalary;
+    let cashInHand = totalCash - onlinePayment - totalFuelCost - otherExpenses - driverSalary;
+    
+    // If negative cash handling option is selected, adjust the calculation
+    if (negativeHandlingOption === 'cashier' && amountFromCashier) {
+      cashInHand += parseFloat(amountFromCashier);
+    }
+    
+    return cashInHand;
+  };
+
+  // Handle negative cash scenarios
+  const handleNegativeCashOption = (option: 'salary' | 'cashier') => {
+    setNegativeHandlingOption(option);
+    setShowNegativeCashModal(false);
+    
+    if (option === 'salary') {
+      // Add negative amount to driver salary
+      setFormData(prev => ({ ...prev, driverTookSalary: true }));
+    } else if (option === 'cashier') {
+      // Set amount to take from cashier
+      setAmountFromCashier(negativeAmount.toString());
+    }
+  };
+
+  // Generate WhatsApp summary
+  const generateWhatsAppSummary = () => {
+    const selectedDriver = drivers.find(d => d._id === formData.driverId);
+    const totalEarnings = calculateTotalEarnings();
+    const totalCommission = calculateTotalCommission();
+    const netEarnings = totalEarnings - totalCommission;
+    const totalCash = calculateTotalCash();
+    const totalFuel = fuelEntries.reduce((sum, entry) => sum + entry.amount, 0);
+    const driverSalaryAmount = calculateDriverSalary();
+    const cashInHand = calculateCashInDriverHand();
+    const otherExpenses = parseFloat(formData.otherExpenses || '0');
+    
+    // Payment status
+    const driverTookPayment = formData.driverTookSalary;
+    const salaryPaid = driverTookPayment ? driverSalaryAmount : 0;
+    const pendingSalary = driverTookPayment ? 0 : driverSalaryAmount;
+    
+    // Negative cash handling
+    let negativeHandlingText = '';
+    if (cashInHand < 0) {
+      if (negativeHandlingOption === 'salary') {
+        negativeHandlingText = `\n⚠️ *Negative Cash Handled:* Added ₹${Math.abs(cashInHand).toFixed(2)} to driver salary`;
+      } else if (negativeHandlingOption === 'cashier') {
+        negativeHandlingText = `\n⚠️ *Negative Cash Handled:* ₹${amountFromCashier} taken from cashier`;
+      } else {
+        negativeHandlingText = `\n⚠️ *Negative Cash:* ₹${Math.abs(cashInHand).toFixed(2)} needs handling`;
+      }
+    }
+    
+    const summary = `*🚗 Trip Summary - ${selectedDriver?.name || 'Driver'}*
+📅 Date: ${new Date(formData.tripDate).toLocaleDateString('en-IN')}
+🛣️ Distance: ${calculateTotalKm()} km
+
+*💰 Platform Earnings:*
+🚗 Uber: ₹${formData.uberEarnings || '0'}
+🚙 InDrive: ₹${formData.indriveEarnings || '0'}
+🛺 Yatri: ₹${formData.yatriEarnings || '0'}${formData.yatriEarnings && parseInt(formData.yatriTrips || '0') > 0 ? ` (${formData.yatriTrips} trips)` : ''}
+🏍️ Rapido: ₹${formData.rapidoEarnings || '0'}
+💵 Offline: ₹${formData.offlineEarnings || '0'}
+
+*📊 Financial Summary:*
+💰 Total Earnings: ₹${totalEarnings.toFixed(2)}
+📋 Commission: ₹${totalCommission.toFixed(2)}
+💵 Net Earnings: ₹${netEarnings.toFixed(2)}
+
+*💸 Driver Payment (${selectedDriver?.commissionPercentage}%):*
+💰 Total Salary: ₹${driverSalaryAmount.toFixed(2)}
+${driverTookPayment ? '✅ Paid Today: ₹' + salaryPaid.toFixed(2) : '⏳ Pending: ₹' + pendingSalary.toFixed(2)}
+
+*💰 Cash Flow:*
+💵 Total Cash: ₹${totalCash.toFixed(2)}
+⛽ Fuel: ₹${totalFuel.toFixed(2)}
+💳 Online: ₹${formData.onlinePayment || '0'}
+${otherExpenses > 0 ? `🔧 Other Expenses: ₹${otherExpenses.toFixed(2)}\n` : ''}💵 Cash in Hand: ₹${cashInHand.toFixed(2)}${negativeHandlingText}
+
+*📋 Trip Notes:*
+${driverTookPayment ? '• Driver received salary payment today' : '• Salary payment pending'}
+${formData.cashGivenToCashier ? '• Cash given to cashier' : ''}
+${formData.hasUberCommission ? '• Uber commission deducted (₹117)' : ''}
+
+Generated by Fleet Management System`;
+
+    return summary;
+  };
+
+  const sendToWhatsApp = () => {
+    const summary = generateWhatsAppSummary();
+    const encodedSummary = encodeURIComponent(summary);
+    const whatsappUrl = `https://wa.me/?text=${encodedSummary}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const copyToClipboard = async () => {
+    const summary = generateWhatsAppSummary();
+    try {
+      await navigator.clipboard.writeText(summary);
+      alert('Summary copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      alert('Failed to copy to clipboard');
+    }
+  };
+
+  const calculateTotalEarnings = () => {
+    return (
+      parseFloat(formData.uberEarnings || '0') +
+      parseFloat(formData.indriveEarnings || '0') +
+      parseFloat(formData.yatriEarnings || '0') +
+      parseFloat(formData.rapidoEarnings || '0') +
+      parseFloat(formData.offlineEarnings || '0')
+    );
   };
 
   const nextStep = () => {
@@ -347,22 +489,14 @@ export default function AddTrip() {
         driverTookSalary: formData.driverTookSalary,
         cashGivenToCashier: formData.cashGivenToCashier,
         
+        // Negative cash handling
+        negativeHandlingOption,
+        amountFromCashier: negativeHandlingOption === 'cashier' ? parseFloat(amountFromCashier) : 0,
+        
         // Calculated values
-        totalEarnings: (
-          parseFloat(formData.uberEarnings || '0') +
-          parseFloat(formData.indriveEarnings || '0') +
-          parseFloat(formData.yatriEarnings || '0') +
-          parseFloat(formData.rapidoEarnings || '0') +
-          parseFloat(formData.offlineEarnings || '0')
-        ),
+        totalEarnings: calculateTotalEarnings(),
         totalCommission: calculateTotalCommission(),
-        netEarnings: (
-          parseFloat(formData.uberEarnings || '0') +
-          parseFloat(formData.indriveEarnings || '0') +
-          parseFloat(formData.yatriEarnings || '0') +
-          parseFloat(formData.rapidoEarnings || '0') +
-          parseFloat(formData.offlineEarnings || '0')
-        ) - calculateTotalCommission(),
+        netEarnings: calculateTotalEarnings() - calculateTotalCommission(),
         driverSalary: calculateDriverSalary(),
         totalCash: calculateTotalCash(),
         cashInDriverHand: calculateCashInDriverHand(),
@@ -387,7 +521,10 @@ export default function AddTrip() {
       });
 
       if (response.ok) {
-        router.push('/');
+        await response.json(); // Parse response but don't store if not needed
+        setTripSummary(tripData);
+        setShowWhatsAppModal(true);
+        // Don't redirect immediately, let user see WhatsApp options
       } else {
         throw new Error('Failed to add trip');
       }
@@ -935,9 +1072,31 @@ export default function AddTrip() {
                           <p className="text-purple-300 text-sm">Driver Salary</p>
                           <p className="text-xl font-bold text-blue-400">₹{calculateDriverSalary().toFixed(2)}</p>
                         </div>
-                        <div>
+                        <div className="animate-fadeInUp" style={{animationDelay: '0.3s'}}>
                           <p className="text-purple-300 text-sm">Cash in Hand</p>
-                          <p className="text-xl font-bold text-orange-400">₹{calculateCashInDriverHand().toFixed(2)}</p>
+                          <p className={`text-xl font-bold transition-all duration-500 ${calculateCashInDriverHand() < 0 ? 'text-red-400 animate-pulse' : 'text-orange-400'}`}>
+                            ₹{calculateCashInDriverHand().toFixed(2)}
+                          </p>
+                          {calculateCashInDriverHand() < 0 && (
+                            <div className="mt-1 animate-slideInDown">
+                              <p className="text-xs text-red-300 animate-fadeIn">
+                                {negativeHandlingOption === 'salary' ? '(Added to salary)' : 
+                                 negativeHandlingOption === 'cashier' ? '(From cashier)' : '(Needs handling)'}
+                              </p>
+                              {!negativeHandlingOption && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNegativeAmount(Math.abs(calculateCashInDriverHand()));
+                                    setShowNegativeCashModal(true);
+                                  }}
+                                  className="mt-1 px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-all duration-300 transform hover:scale-105 hover:shadow-lg animate-bounce"
+                                >
+                                  Handle Negative
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <p className="text-purple-300 text-sm">To Cashier</p>
@@ -950,14 +1109,17 @@ export default function AddTrip() {
               )}
 
               {/* Navigation Buttons */}
-              <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-8 border-t border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-8 border-t border-white/20 animate-fadeInUp">
                 <button
                   type="button"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-white/10 hover:bg-white/20 border border-white/30 text-white backdrop-blur-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm sm:text-base"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-white/10 hover:bg-white/20 border border-white/30 text-white backdrop-blur-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm sm:text-base transform hover:scale-105 hover:shadow-lg"
                 >
-                  Previous
+                  <span className="flex items-center justify-center">
+                    <span className="mr-2">←</span>
+                    Previous
+                  </span>
                 </button>
 
                 {currentStep < STEPS.length ? (
@@ -968,26 +1130,33 @@ export default function AddTrip() {
                       nextStep();
                     }}
                     disabled={!canProceedToNextStep()}
-                    className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm sm:text-base"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transform hover:scale-105 hover:shadow-lg animate-pulse"
                   >
-                    Next Step (Step {currentStep} of {STEPS.length})
+                    <span className="flex items-center justify-center">
+                      Next
+                      <span className="ml-2 animate-bounce">→</span>
+                    </span>
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    disabled={submitting}
-                    className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-green-500/30 transition-all duration-300 rounded-xl flex items-center justify-center text-sm sm:text-base"
+                    disabled={submitting || justMovedToStep3}
+                    className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transform hover:scale-105 hover:shadow-xl relative overflow-hidden"
                   >
                     {submitting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                        Processing...
-                      </>
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Adding Trip...
+                      </span>
                     ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Complete Trip
-                      </>
+                      <span className="flex items-center justify-center">
+                        <span className="animate-bounce mr-2">🚗</span>
+                        Add Trip
+                        <span className="ml-2 animate-pulse">✨</span>
+                      </span>
                     )}
                   </button>
                 )}
@@ -996,6 +1165,117 @@ export default function AddTrip() {
           </div>
         </div>
       </div>
+
+      {/* Negative Cash Modal */}
+      {showNegativeCashModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 animate-slideInUp transform transition-all duration-300">
+            <h3 className="text-xl font-bold text-red-600 mb-4 animate-pulse">⚠️ Negative Cash Alert</h3>
+            <p className="text-gray-700 mb-4 animate-fadeInUp" style={{animationDelay: '0.1s'}}>
+              Cash in hand is negative by <strong className="text-red-600">₹{negativeAmount.toFixed(2)}</strong>. 
+              Please choose how to handle this:
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => handleNegativeCashOption('salary')}
+                className="w-full p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg animate-fadeInUp"
+                style={{animationDelay: '0.2s'}}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <span className="animate-bounce">📊</span>
+                  <span>Add to Driver Salary</span>
+                </div>
+                <div className="text-sm opacity-90 mt-1">Include deficit in driver&apos;s salary calculation</div>
+              </button>
+              
+              <button
+                onClick={() => handleNegativeCashOption('cashier')}
+                className="w-full p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg animate-fadeInUp"
+                style={{animationDelay: '0.3s'}}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <span className="animate-bounce" style={{animationDelay: '0.5s'}}>💰</span>
+                  <span>Take from Cashier</span>
+                </div>
+                <div className="text-sm opacity-90 mt-1">Deduct amount from cashier balance</div>
+              </button>
+            </div>
+            
+            {negativeHandlingOption === 'cashier' && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg animate-slideInDown transition-all duration-500">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amount to take from cashier:
+                </label>
+                <input
+                  type="number"
+                  value={amountFromCashier}
+                  onChange={(e) => setAmountFromCashier(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 transition-all duration-300 focus:scale-105"
+                  placeholder={negativeAmount.toString()}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Summary Modal */}
+      {showWhatsAppModal && tripSummary && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto animate-slideInUp transform transition-all duration-500">
+            <div className="text-center mb-4">
+              <div className="inline-block animate-bounce">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse">
+                  <span className="text-2xl text-white">✅</span>
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-green-600 animate-fadeInUp">Trip Added Successfully!</h3>
+            </div>
+            
+            <div className="mb-6 animate-fadeInUp" style={{animationDelay: '0.2s'}}>
+              <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+                <span className="animate-bounce mr-2">📱</span>
+                Share Summary on WhatsApp:
+              </h4>
+              <div className="bg-gray-50 p-4 rounded-lg text-sm font-mono whitespace-pre-line max-h-40 overflow-y-auto border-2 border-dashed border-gray-300 hover:border-green-400 transition-colors duration-300">
+                {generateWhatsAppSummary()}
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <button
+                onClick={sendToWhatsApp}
+                className="w-full p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2 animate-fadeInUp"
+                style={{animationDelay: '0.3s'}}
+              >
+                <span className="animate-pulse">📱</span>
+                <span>Send via WhatsApp</span>
+              </button>
+              
+              <button
+                onClick={copyToClipboard}
+                className="w-full p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2 animate-fadeInUp"
+                style={{animationDelay: '0.4s'}}
+              >
+                <span className="animate-bounce">📋</span>
+                <span>Copy to Clipboard</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowWhatsAppModal(false);
+                  router.push('/');
+                }}
+                className="w-full p-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg animate-fadeInUp"
+                style={{animationDelay: '0.5s'}}
+              >
+                Continue to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
