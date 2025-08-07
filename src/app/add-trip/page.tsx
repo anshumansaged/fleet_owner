@@ -418,27 +418,27 @@ export default function AddTrip() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="relative mb-8">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-2xl blur-xl"></div>
-          <div className="relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
+        <div className="relative mb-6 sm:mb-8">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-xl sm:rounded-2xl blur-xl"></div>
+          <div className="relative bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+              <div className="flex items-center space-x-3 sm:space-x-6">
                 <Link href="/">
-                  <Button className="bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-md">
+                  <Button className="bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-md p-2 sm:p-3">
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
                 </Link>
                 <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1 sm:mb-2">
                     ✨ Add New Trip
                   </h1>
-                  <p className="text-purple-200">Step {currentStep} of {STEPS.length} • {STEPS[currentStep - 1]?.description}</p>
+                  <p className="text-purple-200 text-sm sm:text-base">Step {currentStep} of {STEPS.length} • {STEPS[currentStep - 1]?.description}</p>
                 </div>
               </div>
               
               {/* Auto-save indicator */}
               {autoSaveStatus && (
-                <div className={`flex items-center space-x-2 px-4 py-2 rounded-full backdrop-blur-md ${
+                <div className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-full backdrop-blur-md text-sm sm:text-base ${
                   autoSaveStatus === 'saved' ? 'bg-green-500/20 text-green-300' :
                   autoSaveStatus === 'saving' ? 'bg-yellow-500/20 text-yellow-300' :
                   'bg-red-500/20 text-red-300'
@@ -455,9 +455,9 @@ export default function AddTrip() {
         </div>
 
         {/* Progress Steps */}
-        <div className="relative mb-8">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl blur-xl"></div>
-          <div className="relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+        <div className="relative mb-6 sm:mb-8">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl sm:rounded-2xl blur-xl"></div>
+          <div className="relative bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               {STEPS.map((step, index) => {
                 const isActive = currentStep === step.id;
@@ -467,15 +467,15 @@ export default function AddTrip() {
                 return (
                   <div key={step.id} className="flex-1">
                     <div className="flex items-center">
-                      <div className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
+                      <div className={`relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full transition-all duration-300 ${
                         isActive ? 'bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg shadow-purple-500/30' :
                         isCompleted ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
                         'bg-white/20 border border-white/30'
                       }`}>
                         {isCompleted ? (
-                          <CheckCircle className="h-6 w-6 text-white" />
+                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                         ) : (
-                          <IconComponent className={`h-6 w-6 ${isActive ? 'text-white' : 'text-purple-300'}`} />
+                          <IconComponent className={`h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 ${isActive ? 'text-white' : 'text-purple-300'}`} />
                         )}
                         {isActive && (
                           <div className="absolute inset-0 rounded-full animate-ping bg-purple-500/30"></div>
@@ -483,19 +483,19 @@ export default function AddTrip() {
                       </div>
                       
                       {index < STEPS.length - 1 && (
-                        <div className={`flex-1 h-1 mx-4 rounded-full transition-all duration-300 ${
+                        <div className={`flex-1 h-0.5 sm:h-1 mx-2 sm:mx-4 rounded-full transition-all duration-300 ${
                           isCompleted ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-white/20'
                         }`}></div>
                       )}
                     </div>
                     
-                    <div className="mt-4 text-center">
-                      <h3 className={`text-sm font-medium ${
+                    <div className="mt-2 sm:mt-4 text-center">
+                      <h3 className={`text-xs sm:text-sm font-medium ${
                         isActive ? 'text-white' : isCompleted ? 'text-green-300' : 'text-purple-300'
                       }`}>
                         {step.title}
                       </h3>
-                      <p className="text-xs text-purple-400 mt-1">{step.description}</p>
+                      <p className="text-xs text-purple-400 mt-1 hidden sm:block">{step.description}</p>
                     </div>
                   </div>
                 );
@@ -506,8 +506,8 @@ export default function AddTrip() {
 
         {/* Main Form Content */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/10 rounded-2xl blur-xl"></div>
-          <div className="relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/10 rounded-xl sm:rounded-2xl blur-xl"></div>
+          <div className="relative bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6 lg:p-8">
             <form 
               onSubmit={handleSubmit} 
               onKeyDown={(e) => {
@@ -516,18 +516,18 @@ export default function AddTrip() {
                   e.preventDefault();
                 }
               }}
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8"
             >
               
               {/* Step 1: Trip Details */}
               {currentStep === 1 && (
                 <div className="space-y-6">
-                  <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-white mb-2">🚗 Trip Details</h2>
-                    <p className="text-purple-300">Let&apos;s start with the basic trip information</p>
+                  <div className="text-center mb-6 sm:mb-8">
+                    <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">🚗 Trip Details</h2>
+                    <p className="text-purple-300 text-sm sm:text-base">Let&apos;s start with the basic trip information</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-2">
                       <label className="flex items-center text-sm font-medium text-purple-200 mb-2">
                         <Calendar className="h-4 w-4 mr-2" />
@@ -539,7 +539,7 @@ export default function AddTrip() {
                         value={formData.tripDate}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300 text-sm sm:text-base"
                       />
                     </div>
 
@@ -553,7 +553,7 @@ export default function AddTrip() {
                         value={formData.driverId}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300 text-sm sm:text-base"
                       >
                         <option value="" className="bg-gray-800 text-gray-300">Select Driver</option>
                         {loading ? (
@@ -581,7 +581,7 @@ export default function AddTrip() {
                         value={formData.startKm}
                         onChange={handleInputChange}
                         placeholder="e.g., 1000"
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300 text-sm sm:text-base"
                       />
                     </div>
 
@@ -596,7 +596,7 @@ export default function AddTrip() {
                         value={formData.endKm}
                         onChange={handleInputChange}
                         placeholder="e.g., 1400"
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300 text-sm sm:text-base"
                       />
                     </div>
                   </div>
@@ -619,12 +619,12 @@ export default function AddTrip() {
               {/* Step 2: Platform Earnings */}
               {currentStep === 2 && (
                 <div className="space-y-6">
-                  <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-white mb-2">💰 Platform Earnings & Cash</h2>
-                    <p className="text-purple-300">Enter earnings and cash collected from each platform</p>
+                  <div className="text-center mb-6 sm:mb-8">
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">💰 Platform Earnings & Cash</h2>
+                    <p className="text-purple-300 text-sm sm:text-base">Enter earnings and cash collected from each platform</p>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     {[
                       { name: 'uber', label: 'Uber', icon: '🚗', color: 'from-yellow-500 to-orange-500', earningsField: 'uberEarnings', cashField: 'uberCash' },
                       { name: 'indrive', label: 'InDrive', icon: '🚙', color: 'from-blue-500 to-indigo-500', earningsField: 'indriveEarnings', cashField: 'indriveCash' },
@@ -634,13 +634,13 @@ export default function AddTrip() {
                     ].map((platform) => (
                       <div key={platform.name} className="relative group">
                         <div className={`absolute inset-0 bg-gradient-to-r ${platform.color} opacity-20 rounded-xl blur-lg group-hover:opacity-30 transition-opacity duration-300`}></div>
-                        <div className="relative p-6 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md transition-all duration-300 hover:border-white/40">
-                          <div className="text-center mb-4">
-                            <div className="text-3xl mb-2">{platform.icon}</div>
-                            <h3 className="text-lg font-semibold text-white">{platform.label}</h3>
+                        <div className="relative p-4 sm:p-6 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md transition-all duration-300 hover:border-white/40">
+                          <div className="text-center mb-3 sm:mb-4">
+                            <div className="text-2xl sm:text-3xl mb-2">{platform.icon}</div>
+                            <h3 className="text-base sm:text-lg font-semibold text-white">{platform.label}</h3>
                           </div>
                           
-                          <div className="space-y-4">
+                          <div className="space-y-3 sm:space-y-4">
                             {/* Earnings Input */}
                             <div>
                               <label className="block text-sm text-purple-200 mb-2">Earnings</label>
@@ -653,7 +653,7 @@ export default function AddTrip() {
                                   onChange={handleInputChange}
                                   placeholder="0.00"
                                   step="0.01"
-                                  className="w-full pl-8 pr-3 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300"
+                                  className="w-full pl-6 sm:pl-8 pr-3 py-2 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300 text-sm sm:text-base"
                                 />
                               </div>
                             </div>
@@ -670,7 +670,7 @@ export default function AddTrip() {
                                   onChange={handleInputChange}
                                   placeholder="0.00"
                                   step="0.01"
-                                  className="w-full pl-8 pr-3 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300"
+                                  className="w-full pl-6 sm:pl-8 pr-3 py-2 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-md transition-all duration-300 text-sm sm:text-base"
                                 />
                               </div>
                             </div>
@@ -950,12 +950,12 @@ export default function AddTrip() {
               )}
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between pt-8 border-t border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-8 border-t border-white/20">
                 <button
                   type="button"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/30 text-white backdrop-blur-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-white/10 hover:bg-white/20 border border-white/30 text-white backdrop-blur-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm sm:text-base"
                 >
                   Previous
                 </button>
@@ -968,7 +968,7 @@ export default function AddTrip() {
                       nextStep();
                     }}
                     disabled={!canProceedToNextStep()}
-                    className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm sm:text-base"
                   >
                     Next Step (Step {currentStep} of {STEPS.length})
                   </button>
@@ -976,7 +976,7 @@ export default function AddTrip() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-green-500/30 transition-all duration-300 rounded-xl flex items-center"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-green-500/30 transition-all duration-300 rounded-xl flex items-center justify-center text-sm sm:text-base"
                   >
                     {submitting ? (
                       <>

@@ -150,45 +150,45 @@ export default function Dashboard() {
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 space-y-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
         {/* Enhanced Header with Glassmorphism */}
-        <div className="backdrop-blur-md bg-white/70 rounded-3xl shadow-2xl border border-white/20 p-8 hover:bg-white/80 transition-all duration-500">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <div className="backdrop-blur-md bg-white/70 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 p-4 sm:p-6 lg:p-8 hover:bg-white/80 transition-all duration-500">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div className="space-y-2">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                  <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-4xl font-black bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 bg-clip-text text-transparent">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 bg-clip-text text-transparent">
                     Fleet Management
                   </h1>
-                  <p className="text-slate-600 text-xl font-medium">Real-time operations dashboard</p>
-                  <div className="flex items-center space-x-2 mt-2">
+                  <p className="text-slate-600 text-base sm:text-lg lg:text-xl font-medium">Real-time operations dashboard</p>
+                  <div className="flex items-center space-x-2 mt-1 sm:mt-2">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-slate-500">Live updates enabled</span>
+                    <span className="text-xs sm:text-sm text-slate-500">Live updates enabled</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3 sm:space-x-4">
               <Button
                 variant="outline"
                 onClick={fetchDashboardData}
                 disabled={refreshing}
-                className="border-2 border-slate-300 hover:border-blue-400 hover:bg-blue-50/80 backdrop-blur-sm transition-all duration-300 px-6 py-3 rounded-2xl font-semibold"
+                className="border-2 border-slate-300 hover:border-blue-400 hover:bg-blue-50/80 backdrop-blur-sm transition-all duration-300 px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base"
               >
-                <RefreshCw className={`h-5 w-5 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                Refresh
+                <RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Stats Grid with Improved Animation */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {/* Enhanced Stats Grid with Improved Animation and Mobile Responsiveness */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
           {[
             {
               title: "Total Drivers",
@@ -224,46 +224,46 @@ export default function Dashboard() {
             }
           ].map((stat, index) => (
             <div key={stat.title} className="group">
-              <div className={`backdrop-blur-md bg-white/70 rounded-2xl shadow-xl border border-white/20 p-6 hover:bg-white/80 hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1`} style={{animationDelay: `${index * 100}ms`}}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-600 mb-2">{stat.title}</p>
-                    <p className={`text-3xl font-black ${stat.textColor} group-hover:scale-110 transition-transform duration-300`}>
+              <div className={`backdrop-blur-md bg-white/70 rounded-xl sm:rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 lg:p-6 hover:bg-white/80 hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1`} style={{animationDelay: `${index * 100}ms`}}>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-semibold text-slate-600 mb-1 sm:mb-2 truncate">{stat.title}</p>
+                    <p className={`text-lg sm:text-2xl lg:text-3xl font-black ${stat.textColor} group-hover:scale-110 transition-transform duration-300 break-all sm:break-normal`}>
                       {stat.value}
                     </p>
                   </div>
-                  <div className={`w-14 h-14 bg-gradient-to-r ${stat.color} rounded-2xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-300`}>
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-r ${stat.color} rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-300 flex-shrink-0`}>
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={stat.icon} />
                     </svg>
                   </div>
                 </div>
-                <div className={`mt-4 h-1 bg-gradient-to-r ${stat.color} rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500`}></div>
+                <div className={`mt-2 sm:mt-4 h-1 bg-gradient-to-r ${stat.color} rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500`}></div>
               </div>
             </div>
           ))}
         </div>
 
         {/* Enhanced Driver Filter with Modern Design */}
-        <div className="backdrop-blur-md bg-white/70 rounded-3xl shadow-2xl border border-white/20 p-8 hover:bg-white/80 transition-all duration-500">
-          <div className="mb-8">
-            <h2 className="text-3xl font-black bg-gradient-to-r from-slate-900 to-blue-900 bg-clip-text text-transparent mb-3">
+        <div className="backdrop-blur-md bg-white/70 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 p-4 sm:p-6 lg:p-8 hover:bg-white/80 transition-all duration-500">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-slate-900 to-blue-900 bg-clip-text text-transparent mb-2 sm:mb-3">
               Driver Overview
             </h2>
-            <p className="text-slate-600 text-lg">Select a driver to view detailed performance metrics and insights</p>
+            <p className="text-slate-600 text-sm sm:text-base lg:text-lg">Select a driver to view detailed performance metrics and insights</p>
           </div>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-2 sm:gap-3 lg:gap-4">
             <Button
               variant={selectedDriver === 'all' ? 'default' : 'outline'}
               onClick={() => setSelectedDriver('all')}
-              className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+              className={`px-4 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base lg:text-lg transition-all duration-300 transform hover:scale-105 ${
                 selectedDriver === 'all' 
                   ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white shadow-xl hover:shadow-2xl' 
                   : 'border-2 border-slate-300 hover:border-blue-400 hover:bg-blue-50/80 backdrop-blur-sm'
               }`}
             >
-              🏢 All Drivers 
-              <span className="ml-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
+              <span className="hidden sm:inline">🏢 </span>All Drivers 
+              <span className="ml-1 sm:ml-2 px-2 sm:px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm font-medium">
                 {dashboardData.drivers.length}
               </span>
             </Button>
@@ -272,15 +272,15 @@ export default function Dashboard() {
                 key={driver.driverId}
                 variant={selectedDriver === driver.driverId ? 'default' : 'outline'}
                 onClick={() => setSelectedDriver(driver.driverId)}
-                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+                className={`px-3 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm lg:text-lg transition-all duration-300 transform hover:scale-105 ${
                   selectedDriver === driver.driverId 
                     ? 'bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white shadow-xl hover:shadow-2xl' 
                     : 'border-2 border-slate-300 hover:border-emerald-400 hover:bg-emerald-50/80 backdrop-blur-sm'
                 }`}
                 style={{animationDelay: `${index * 100}ms`}}
               >
-                👨‍💼 {driver.name}
-                <span className="ml-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
+                <span className="hidden sm:inline">👨‍💼 </span>{driver.name}
+                <span className="ml-1 sm:ml-2 px-2 sm:px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm font-medium">
                   {driver.commissionPercentage}%
                 </span>
               </Button>
@@ -289,15 +289,15 @@ export default function Dashboard() {
         </div>
 
         {/* Enhanced Driver Cards with Glassmorphism */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {dashboardData.drivers.map((driver, index) => (
             <div 
               key={driver.driverId} 
-              className="group backdrop-blur-md bg-white/70 rounded-3xl shadow-2xl border border-white/20 overflow-hidden hover:bg-white/80 hover:shadow-3xl transition-all duration-500 transform hover:scale-[1.02] hover:-translate-y-2"
+              className="group backdrop-blur-md bg-white/70 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 overflow-hidden hover:bg-white/80 hover:shadow-3xl transition-all duration-500 transform hover:scale-[1.02] hover:-translate-y-2"
               style={{animationDelay: `${index * 150}ms`}}
             >
               {/* Enhanced Driver Header with Gradient */}
-              <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 p-8 text-white relative overflow-hidden">
+              <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 p-4 sm:p-6 lg:p-8 text-white relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm"></div>
                 <div className="relative z-10 flex justify-between items-start">
                   <div className="flex items-center space-x-6">
