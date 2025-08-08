@@ -129,8 +129,8 @@ export async function POST(request: NextRequest) {
     // Calculate driver salary if taken
     const driverSalary = driverTookSalary ? (netEarnings * driver.commissionPercentage / 100) : 0;
     
-    // Calculate cash in driver hand
-    const cashInDriverHand = totalCashCollected - totalFuelCost - onlinePayment - otherExpenses - driverSalary;
+    // Calculate cash in driver hand (subtract cashToCashier)
+    const cashInDriverHand = totalCashCollected - totalFuelCost - onlinePayment - otherExpenses - driverSalary - cashToCashier;
 
     // Create trip with detailed structure
     const trip = new Trip({
